@@ -147,6 +147,7 @@ void cb(const geometry_msgs::Twist& twist_msg){
 
 ros::NodeHandle  nh;
 
+
 std_msgs::Bool e_stop_msg;
 
 std_msgs::Int16MultiArray ir;
@@ -155,9 +156,9 @@ std_msgs::Int16MultiArray mpos;
 
 int ir_array;
 ros::Publisher e_stop("e_stop", &e_stop_msg);
-ros::Publisher ir_sensors("ir_sensors", &ir);
-ros::Publisher motorcb("motorcb", &mcb);
-//ros::Publisher motorpos("motorpos", &mpos);
+//ros::Publisher ir_sensors("ir_sensors", &ir);
+//ros::Publisher motorcb("motorcb", &mcb);
+ros::Publisher motorpos("motorpos", &mpos);
 
 ros::Subscriber <geometry_msgs::Twist> sub("cmd_vel", &cb);
 
@@ -189,8 +190,9 @@ void setup() {
 
   nh.initNode();
   nh.advertise(e_stop);
-  nh.advertise(ir_sensors);
-  nh.advertise(motorcb);
+  //nh.advertise(ir_sensors);
+ // nh.advertise(motorcb);
+  nh.advertise(motorpos);
   nh.subscribe(sub);
   
   
@@ -274,9 +276,9 @@ void loop() {
 
   
   //publish the data
-  //motorpos.publish( &mpos);
-  motorcb.publish( &mcb );
-  ir_sensors.publish( &ir );
+  motorpos.publish( &mpos);
+  //motorcb.publish( &mcb );
+  //ir_sensors.publish( &ir );
   e_stop.publish( &e_stop_msg);
   
   nh.spinOnce();
@@ -288,6 +290,7 @@ void loop() {
 
 
 // end of the loop
+
 // end of the loop in case you missed it.  
 
 
