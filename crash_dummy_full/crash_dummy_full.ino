@@ -124,7 +124,7 @@ void close_claw(){
   }
 }
 
-void claw(const std_msgs::Bool & claw_msg){
+void claw_cb(const std_msgs::Bool & claw_msg){
   if (claw_msg == 1){
     open_claw();
     arm_down();
@@ -222,7 +222,7 @@ ros::Publisher e_stop("e_stop", &e_stop_msg);
 ros::Publisher motorpos("motorpos", &mpos);
 
 ros::Subscriber <geometry_msgs::Twist> sub("cmd_vel", &cb);
-ros::Subscriber <std_msgs::Bool> sub("img_rec", &claw);
+ros::Subscriber <std_msgs::Bool> sub("img_rec", &claw_cb);
 
 void setup() {
   pinMode(eStopPin, INPUT);
