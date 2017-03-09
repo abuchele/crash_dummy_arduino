@@ -79,6 +79,15 @@ Adafruit_NeoPixel h2 = Adafruit_NeoPixel(numPixels, headlight2, NEO_GRBW + NEO_K
 Adafruit_NeoPixel b1 = Adafruit_NeoPixel(numPixels, backlight1, NEO_GRBW + NEO_KHZ800);
 Adafruit_NeoPixel b2 = Adafruit_NeoPixel(numPixels, backlight2, NEO_GRBW + NEO_KHZ800);
 
+void claw(const std_msgs::Bool & claw_msg){
+  if (claw_msg == 1){
+    //do claw pickup stuff
+  }
+  else {
+    //set claw to "down and closed"
+  }
+}
+
 void cb(const geometry_msgs::Twist& twist_msg){
   turnRight = false;
   turnLeft = false;
@@ -161,7 +170,7 @@ ros::Publisher e_stop("e_stop", &e_stop_msg);
 ros::Publisher motorpos("motorpos", &mpos);
 
 ros::Subscriber <geometry_msgs::Twist> sub("cmd_vel", &cb);
-
+ros::Subscriber <std_msgs::Bool> sub("img_rec", &claw);
 
 void setup() {
   pinMode(eStopPin, INPUT);
