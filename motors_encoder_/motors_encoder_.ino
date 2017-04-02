@@ -6,7 +6,7 @@
 #include <std_msgs/String.h>
 #include <std_msgs/Empty.h>
 #include <geometry_msgs/Twist.h>
-  #include <std_msgs/Int16.h>
+#include <std_msgs/Int16.h>
 #include <std_msgs/Int8.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Int32.h>
@@ -80,7 +80,7 @@ Adafruit_NeoPixel b1 = Adafruit_NeoPixel(numPixels, backlight1, NEO_GRBW + NEO_K
 Adafruit_NeoPixel b2 = Adafruit_NeoPixel(numPixels, backlight2, NEO_GRBW + NEO_KHZ800);
 
 void claw(const std_msgs::Bool & claw_msg){
-  if (claw_msg == 1){
+  if (claw_msg.data == true){
     //do claw pickup stuff
   }
   else {
@@ -170,7 +170,7 @@ ros::Publisher e_stop("e_stop", &e_stop_msg);
 ros::Publisher motorpos("motorpos", &mpos);
 
 ros::Subscriber <geometry_msgs::Twist> sub("cmd_vel", &cb);
-ros::Subscriber <std_msgs::Bool> sub("img_rec", &claw);
+ros::Subscriber <std_msgs::Bool> sub2("img_rec", &claw);
 
 void setup() {
   pinMode(eStopPin, INPUT);
@@ -203,6 +203,7 @@ void setup() {
  // nh.advertise(motorcb);
   nh.advertise(motorpos);
   nh.subscribe(sub);
+  nh.subscribe(sub2);
   
   
   //setup both arrays
@@ -248,14 +249,14 @@ void loop() {
   
   //if there's no ground set motor speeds to zero
   if (leftIR_range > 50.0 || rightIR_range > 50.0){
-    leftMotorSpeed = 85;
-    rightMotorSpeed = 85;
+    //leftMotorSpeed = 85;
+    //rightMotorSpeed = 85;
   }
   
   if (leftMotorSpeed < 0 || rightMotorSpeed < 0){
     if (back_leftIR_range < 25.0 || back_rightIR_range < 25.0){
-      leftMotorSpeed = 85;
-      rightMotorSpeed = 85;
+      //leftMotorSpeed = 85;
+      //rightMotorSpeed = 85;
     }
   }
   

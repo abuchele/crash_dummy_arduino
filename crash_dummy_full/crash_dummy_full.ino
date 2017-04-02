@@ -1,4 +1,4 @@
-#include <Encoder.h>
+//#include <Encoder.h>
 #include <ArduinoHardware.h>
 #include <ros.h>
 #include <Adafruit_NeoPixel.h>
@@ -37,7 +37,7 @@ int pos_arm = 0;
 
 
 // the encoder initialization
-Encoder leftEnc(2,3);
+/*Encoder leftEnc(2,3);
 const int leftApin = 2;
 const int leftBpin = 3;
 int leftAstate = 0;
@@ -52,7 +52,7 @@ int rightAstate = 0;
 int rightBstate = 0;
 long rightAposition;
 long rightBposition;
-
+*/
 
 // the data pin for the NeoPixels
 int headlight1 = 9;
@@ -124,8 +124,8 @@ void close_claw(){
   }
 }
 
-void claw_cb(const std_msgs::Bool & claw_msg){
-  if (claw_msg == 1){
+void claw_cb(const std_msgs::Int32 & claw_msg){
+  if (claw_msg.data == 1){
     open_claw();
     arm_down();
     delay(2000);
@@ -219,10 +219,10 @@ int ir_array;
 ros::Publisher e_stop("e_stop", &e_stop_msg);
 //ros::Publisher ir_sensors("ir_sensors", &ir);
 //ros::Publisher motorcb("motorcb", &mcb);
-ros::Publisher motorpos("motorpos", &mpos);
+//ros::Publisher motorpos("motorpos", &mpos);
 
 ros::Subscriber <geometry_msgs::Twist> sub("cmd_vel", &cb);
-ros::Subscriber <std_msgs::Bool> sub("img_rec", &claw_cb);
+ros::Subscriber <std_msgs::Int32> sub2("img_rec", &claw_cb);
 
 void setup() {
   pinMode(eStopPin, INPUT);
@@ -261,8 +261,9 @@ void setup() {
   nh.advertise(e_stop);
   //nh.advertise(ir_sensors);
  // nh.advertise(motorcb);
-  nh.advertise(motorpos);
+  //nh.advertise(motorpos);
   nh.subscribe(sub);
+  nh.subscribe(sub2);
   
   
   //setup both arrays
@@ -336,16 +337,16 @@ void loop() {
   
   e_stop_msg.data = eStopTriggered;
 
-  int changeRight;
+  /*int changeRight;
   int changeLeft;
   changeRight = getChange(rightEnc);
   changeLeft = getChange(leftEnc);
   mpos.data[0] = changeRight;
   mpos.data[1] = changeLeft;
-
+*/
   
   //publish the data
-  motorpos.publish( &mpos);
+  //motorpos.publish( &mpos);
   //motorcb.publish( &mcb );
   //ir_sensors.publish( &ir );
   e_stop.publish( &e_stop_msg);
@@ -431,10 +432,10 @@ boolean readEstop(){
 }
 
 
-int getChange(Encoder enc){
+/*int getChange(Encoder enc){
   int position;
   position = enc.read();
   enc.write(0);
   return position;
 
-}
+}*/
