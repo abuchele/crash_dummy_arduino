@@ -6,7 +6,7 @@
 #include <std_msgs/String.h>
 #include <std_msgs/Empty.h>
 #include <geometry_msgs/Twist.h>
-  #include <std_msgs/Int16.h>
+#include <std_msgs/Int16.h>
 #include <std_msgs/Int8.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Int32.h>
@@ -125,19 +125,19 @@ void close_claw(){
 }
 
 void claw_cb(const std_msgs::Int32 & claw_msg){
-  if (claw_msg.data == 1){
+//  if (claw_msg.data == 3){
     open_claw();
     arm_down();
     delay(2000);
     close_claw();
     arm_up();
     //do claw pickup stuff
-  }
-  else {
-    arm_up();
-    close_claw();
+ // }
+ // else {
+ //   arm_up();
+ //   close_claw();
     //set claw to "up and closed"
-  }
+ // }
 }
 
 void cb(const geometry_msgs::Twist& twist_msg){
@@ -222,7 +222,7 @@ ros::Publisher e_stop("e_stop", &e_stop_msg);
 //ros::Publisher motorpos("motorpos", &mpos);
 
 ros::Subscriber <geometry_msgs::Twist> sub("cmd_vel", &cb);
-ros::Subscriber <std_msgs::Int32> sub2("img_rec", &claw_cb);
+ros::Subscriber <std_msgs::Int32> sub2("img_rec/miss_stat", &claw_cb);
 
 void setup() {
   pinMode(eStopPin, INPUT);

@@ -33,16 +33,16 @@ const int leftApin = 2;
 const int leftBpin = 3;
 int leftAstate = 0;
 int leftBstate = 0;
-long leftAposition;
-long leftBposition;
+int leftAposition;
+int leftBposition;
 
 Encoder rightEnc(5, 7);
 const int rightApin = 5;
 const int rightBpin = 7;
 int rightAstate = 0;
 int rightBstate = 0;
-long rightAposition;
-long rightBposition;
+int rightAposition;
+int rightBposition;
 
 
 // the data pin for the NeoPixels
@@ -201,7 +201,7 @@ void setup() {
   nh.advertise(e_stop);
   //nh.advertise(ir_sensors);
  // nh.advertise(motorcb);
-  nh.advertise(motorpos);
+  //nh.advertise(motorpos);
   nh.subscribe(sub);
   nh.subscribe(sub2);
   
@@ -286,7 +286,7 @@ void loop() {
 
   
   //publish the data
-  motorpos.publish( &mpos);
+  //motorpos.publish( &mpos);
   //motorcb.publish( &mcb );
   //ir_sensors.publish( &ir );
   e_stop.publish( &e_stop_msg);
