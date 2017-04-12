@@ -5,14 +5,12 @@
 #include <std_msgs/String.h>
 #include <std_msgs/Empty.h>
 #include <geometry_msgs/Twist.h>
-#include <std_msgs/Int16.h>
+  #include <std_msgs/Int16.h>
 #include <std_msgs/Int8.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/Int16MultiArray.h>
-#include <std_msgs/Int8MultiArray.h>
 
-std_msgs::Int8 miss_stat;
 Servo leftMotor;
 Servo rightMotor;
 Servo lidar;
@@ -20,10 +18,10 @@ uint32_t c;
 int leftIR = A0;
 int rightIR = A1;
 int back_leftIR = A2;
-int back_rightIR = A4;
+int back_rightIR = A3;
 int eStopPin = A8;
-int leftMotorSpeed = 0;
-int rightMotorSpeed = 0;
+int leftMotorSpeed = 85;
+int rightMotorSpeed = 85;
 int constant = 0;
 // the data pin for the NeoPixels
 int headlight1 = 9;
@@ -58,57 +56,6 @@ Adafruit_NeoPixel h1 = Adafruit_NeoPixel(numPixels, headlight1, NEO_GRBW + NEO_K
 Adafruit_NeoPixel h2 = Adafruit_NeoPixel(numPixels, headlight2, NEO_GRBW + NEO_KHZ800);
 Adafruit_NeoPixel b1 = Adafruit_NeoPixel(numPixels, backlight1, NEO_GRBW + NEO_KHZ800);
 Adafruit_NeoPixel b2 = Adafruit_NeoPixel(numPixels, backlight2, NEO_GRBW + NEO_KHZ800);
-
-
-// claw and arm functions 
-void arm_up(){
-  while (pos_arm <=180){
-    arm.write(pos_arm);
-    pos_arm++;
-    delay(50);
-  }
-  return;
-}
-
-void arm_down(){
-  while (pos_arm >=0){
-    arm.write(pos_arm);
-    pos_arm--;
-    delay(50);
-  }
-  return;
-}
-
-void open_claw(){
-while(pos_claw >0){
- claw.write(pos_claw);              // tell servo to go to position in variable 'pos'
-pos_claw --;
-    delay(50);
-  
-}
-return;
-}
-void close_claw(){
-  while(pos_claw <180){
-       claw.write(pos_claw);              // tell servo to go to position in variable 'pos'
-      pos_claw++;
-      delay(50);  
-  }
-}
-
-
-void claw_cycle(){
-  open_claw();
-  arm_down();
-  close_claw();
-  arm_up();
-}
-
-void claw_cb(const std_msgs::Int8& miss_stat){
-  if (miss_stat.data == 3){
-    claw_cycle()
-  }
-}
 
 void cb(const geometry_msgs::Twist& twist_msg){
   turnRight = false;
@@ -170,9 +117,9 @@ void cb(const geometry_msgs::Twist& twist_msg){
     }
     
   }
+  
   leftMotorSpeed = map(leftMotorSpeed,-100,100,140,30);
   rightMotorSpeed = map(rightMotorSpeed,-100,100,140,30);
-  
   
 }
 
@@ -181,15 +128,14 @@ ros::NodeHandle  nh;
 std_msgs::Bool e_stop_msg;
 
 std_msgs::Int16MultiArray ir;
-std_msgs::Int8MultiArray mcb;
+std_msgs::Int16MultiArray mcb;
 
 int ir_array;
 ros::Publisher e_stop("e_stop", &e_stop_msg);
-//ros::Publisher ir_sensors("ir_sensors", &ir);
-//ros::Publisher motorcb("motorcb", &mcb);
+ros::Publisher ir_sensors("ir_sensors", &ir);
+ros::Publisher motorcb("motorcb", &mcb);
 
 ros::Subscriber <geometry_msgs::Twist> sub("cmd_vel", &cb);
-ros::Subscriber <std_msgs::Int8> sub2("img_rec/miss_stat", &cb);
 
 
 void setup() {
@@ -214,22 +160,21 @@ void setup() {
        //h2.setBrightness(50);
   }
   
-  h1.show();
-  h2.show();
+  //h1.show();
+  //h2.show();
 
   nh.initNode();
   nh.advertise(e_stop);
-  //nh.advertise(ir_sensors);
-  //nh.advertise(motorcb);
+  nh.advertise(ir_sensors);
+  nh.advertise(motorcb);
   nh.subscribe(sub);
-  nh.subscribe(sub2);
   
   
   //setup both arrays
-  ir.data = (int16_t*) malloc(4);
+  ir.data = (int16_t*) malloc(5);
   ir.data_length = 4;
   
-  mcb.data = (int8_t*) malloc(3);
+  mcb.data = (int16_t*) malloc(3);
   mcb.data_length = 2;
   lidar.write(90);
 }
@@ -267,37 +212,30 @@ void loop() {
   }
   
   //if there's no ground set motor speeds to zero
-  if (leftIR_range > 50.0 || rightIR_range > 50.0){
-    leftMotorSpeed = 85;
-    rightMotorSpeed = 85;
-  }
-  
-  if (leftMotorSpeed < 0 || rightMotorSpeed < 0){
-    if (back_leftIR_range < 25.0 || back_rightIR_range < 25.0){
-      leftMotorSpeed = 85;
-      rightMotorSpeed = 85;
-    }
-  }
-  
+  //if (leftIR_range > 50.0 || rightIR_range > 50.0){
+  //  leftMotorSpeed = 85;
+  //  rightMotorSpeed = 85;
+  //}
  
   //write the motor speeds to the motor
   leftMotor.write(leftMotorSpeed);
   rightMotor.write(rightMotorSpeed); 
+
   
   //set the data to be published
-  //ir.data[0] = leftIR_range;
-  //ir.data[1] = rightIR_range;
-  //ir.data[2] = back_leftIR_range;
-  //ir.data[3] = back_rightIR_range;
+  ir.data[0] = leftIR_range;
+  ir.data[1] = rightIR_range;
+  ir.data[2] = back_leftIR_range;
+  ir.data[3] = back_rightIR_range;
 
-  //mcb.data[0] = leftMotorSpeed;
-  //mcb.data[1] = rightMotorSpeed;
+  mcb.data[0] = leftMotorSpeed;
+  mcb.data[1] = rightMotorSpeed;
   
   e_stop_msg.data = eStopTriggered;
   
   //publish the data
-  //motorcb.publish( &mcb );
-  //ir_sensors.publish( &ir );
+  motorcb.publish( &mcb );
+  ir_sensors.publish( &ir );
   e_stop.publish( &e_stop_msg);
   
   nh.spinOnce();
