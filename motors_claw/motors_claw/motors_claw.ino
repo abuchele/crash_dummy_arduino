@@ -21,6 +21,7 @@ int leftIR = A0;
 int rightIR = A1;
 int back_leftIR = A2;
 int back_rightIR = A4;
+const int clawIR = A0;
 int eStopPin = A8;
 int leftMotorSpeed = 0;
 int rightMotorSpeed = 0;
@@ -44,8 +45,8 @@ uint16_t j = 8;
 uint16_t k = 0;
 
 //claw and arm 
-#define ARM_PIN 3
-#define CLAW_PIN 2
+#define ARM_PIN 2
+#define CLAW_PIN 3
 Servo claw;  // create servo object to control a servo
 Servo arm;
 // twelve servo objects can be created on most boards
@@ -68,47 +69,69 @@ Adafruit_NeoPixel b1 = Adafruit_NeoPixel(numPixels, backlight1, NEO_GRBW + NEO_K
 Adafruit_NeoPixel b2 = Adafruit_NeoPixel(numPixels, backlight2, NEO_GRBW + NEO_KHZ800);
 
 
+int irRead() {
+  int averaging = 0;             //  Holds value to average readings
+  int distance = 0;
+
+  // Get a sampling of 5 readings from sensor
+  for (int i=0; i<5; i++) {
+    distance = analogRead(clawIR);
+    averaging = averaging + distance;
+    delay(55);      // Wait 55 ms between each read
+                    // According to datasheet time between each read
+                    //  is -38ms +/- 10ms. Waiting 55 ms assures each
+                    //  read is from a different sample
+  }
+  distance = averaging / 5;      // Average out readings
+  return(distance);              // Return value
+}
+
 // claw and arm functions 
 void arm_up(){
-  while (pos_arm <=180){
-    arm.write(pos_arm);
-    pos_arm++;
-    delay(50);
-  }
-  return;
+  arm.write(169);
+  delay(50);
 }
 
 void arm_down(){
-  while (pos_arm >=0){
-    arm.write(pos_arm);
-    pos_arm--;
-    delay(50);
-  }
-  return;
+  arm.write(0);
+  delay(50);
 }
 
 void open_claw(){
-while(pos_claw >0){
- claw.write(pos_claw);              // tell servo to go to position in variable 'pos'
-pos_claw --;
-    delay(50);
-  
+ claw.write(0);              // tell servo to go to position in variable 'pos'
+ delay(50);
 }
-return;
-}
+
 void close_claw(){
-  while(pos_claw <180){
-       claw.write(pos_claw);              // tell servo to go to position in variable 'pos'
-      pos_claw++;
-      delay(50);  
+  claw.write(180);
+  delay(50);
+}
+
+void position_forward(){
+  while (irRead() < 450) { //IR distance for can
+  //scoots forward after claw is down and open, to position can correctly for pickup, speeds and times need to be calibrated
+  leftMotorSpeed = 90; //write slow speed to left and right motors
+  rightMotorSpeed = 90;
+  leftMotor.write(leftMotorSpeed);
+  rightMotor.write(rightMotorSpeed); 
+  delay(100);          // wait for enough time for it to scoot forward
   }
+  leftMotorSpeed = 85; // write stopped speed to left and right motors.
+  rightMotorSpeed = 85;
+  leftMotor.write(leftMotorSpeed);
+  rightMotor.write(rightMotorSpeed); 
 }
 
 
 void claw_cycle(){
   open_claw();
+  delay(500);
   arm_down();
+  delay(500);
+  position_forward();
+  delay(1000);
   close_claw();
+  delay(1000);
   arm_up();
 }
 
@@ -186,7 +209,7 @@ std_msgs::Bool e_stop_msg;
 ros::Publisher e_stop("e_stop", &e_stop_msg);
 
 ros::Subscriber <geometry_msgs::Twist> sub("cmd_vel", &cb);
-ros::Subscriber <std_msgs::Int8> sub2("img_rec/miss_stat", &claw_cb);
+ros::Subscriber <std_msgs::Int8> sub2("miss_stat", &claw_cb);
 
 
 void setup() {
@@ -202,6 +225,12 @@ void setup() {
   leftMotor.attach(7);
   rightMotor.attach(6);
   lidar.attach(4);
+  arm.attach(ARM_PIN);
+  claw.attach(CLAW_PIN);
+  arm.write(169);
+  
+  claw.write(180);
+  
   
   // set the colors for the strip
   for( int i = 0; i < numPixels; i++ ){
