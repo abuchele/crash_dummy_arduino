@@ -151,6 +151,9 @@ void setup() {
   leftMotor.attach(7);
   rightMotor.attach(6);
   lidar.attach(4);
+  Servo claw;
+  claw.attach(3);
+  claw.write(180);
   
   // set the colors for the strip
   for( int i = 0; i < numPixels; i++ ){

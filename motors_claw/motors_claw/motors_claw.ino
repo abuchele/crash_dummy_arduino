@@ -98,38 +98,38 @@ void arm_down(){
 }
 
 void open_claw(){
- claw.write(0);              // tell servo to go to position in variable 'pos'
+ claw.write(180);              // tell servo to go to position in variable 'pos'
  delay(50);
 }
 
 void close_claw(){
-  claw.write(180);
+  claw.write(0);
   delay(50);
 }
 
 void position_forward(){
   while (irRead() < 450) { //IR distance for can
   //scoots forward after claw is down and open, to position can correctly for pickup, speeds and times need to be calibrated
-  leftMotorSpeed = 90; //write slow speed to left and right motors
-  rightMotorSpeed = 90;
+  leftMotorSpeed = 75; //write slow speed to left and right motors
+  rightMotorSpeed = 75;
   leftMotor.write(leftMotorSpeed);
   rightMotor.write(rightMotorSpeed); 
-  delay(100);          // wait for enough time for it to scoot forward
   }
   leftMotorSpeed = 85; // write stopped speed to left and right motors.
   rightMotorSpeed = 85;
-  leftMotor.write(leftMotorSpeed);
-  rightMotor.write(rightMotorSpeed); 
+  leftMotor.write(85);
+  rightMotor.write(85); 
 }
 
 
 void claw_cycle(){
+  leftMotor.write(85);
+  rightMotor.write(85); 
   open_claw();
   delay(500);
   arm_down();
-  delay(500);
-  position_forward();
   delay(1000);
+  position_forward();
   close_claw();
   delay(1000);
   arm_up();
@@ -285,14 +285,14 @@ void loop() {
   
   //if there's no ground set motor speeds to zero
   if (leftIR_range > 50.0 || rightIR_range > 50.0){
-    leftMotorSpeed = 85;
-    rightMotorSpeed = 85;
+    //leftMotorSpeed = 85;
+    //rightMotorSpeed = 85;
   }
   
   if (leftMotorSpeed < 0 || rightMotorSpeed < 0){
     if (back_leftIR_range < 25.0 || back_rightIR_range < 25.0){
-      leftMotorSpeed = 85;
-      rightMotorSpeed = 85;
+      //leftMotorSpeed = 85;
+      //rightMotorSpeed = 85;
     }
   }
   
