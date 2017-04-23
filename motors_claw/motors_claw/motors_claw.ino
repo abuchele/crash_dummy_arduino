@@ -38,6 +38,7 @@ bool turnRight = false;
 bool straight = true;
 char light_state = 'f';
 bool use_cmd = true;
+bool can_picked = false;
 
 unsigned long previousMillis = 0;        // will store last time LED was updated 
 unsigned long interval = 60;           // interval at which to blink (milliseconds)
@@ -137,6 +138,8 @@ void claw_cycle(){
   arm_up();
   delay(5000);
   use_cmd = true;
+  can_picked = true;
+  
 }
 
 void claw_cb(const std_msgs::Int8& miss_stat){
@@ -211,8 +214,10 @@ void cb(const geometry_msgs::Twist& twist_msg){
 ros::NodeHandle  nh;
 
 std_msgs::Bool e_stop_msg;
+std_msgs::Bool can_picked_msg;
 
 ros::Publisher e_stop("e_stop", &e_stop_msg);
+ros::Publisher can_picked_pub("can_picked_pub", &can_picked_msg);
 
 ros::Subscriber <geometry_msgs::Twist> sub("cmd_vel", &cb);
 ros::Subscriber <std_msgs::Int8> sub2("miss_stat", &claw_cb);
@@ -251,6 +256,7 @@ void setup() {
 
   nh.initNode();
   nh.advertise(e_stop);
+  nh.advertise(can_picked_pub);
   nh.subscribe(sub);
   nh.subscribe(sub2);
   
@@ -309,9 +315,11 @@ void loop() {
   }
   
   e_stop_msg.data = eStopTriggered;
+  can_picked_msg.data = can_picked;
   
   //publish the data
   e_stop.publish( &e_stop_msg);
+  can_picked_pub.publish( &can_picked_msg);
   
   nh.spinOnce();
 }
