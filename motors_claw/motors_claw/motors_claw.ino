@@ -37,6 +37,7 @@ bool turnLeft = false;
 bool turnRight = false;
 bool straight = true;
 char light_state = 'f';
+bool use_cmd = true;
 
 unsigned long previousMillis = 0;        // will store last time LED was updated 
 unsigned long interval = 60;           // interval at which to blink (milliseconds)
@@ -93,7 +94,7 @@ void arm_up(){
 }
 
 void arm_down(){
-  arm.write(0);
+  arm.write(10);
   delay(50);
 }
 
@@ -123,6 +124,7 @@ void position_forward(){
 
 
 void claw_cycle(){
+  use_cmd = false;
   leftMotor.write(85);
   rightMotor.write(85); 
   open_claw();
@@ -133,6 +135,8 @@ void claw_cycle(){
   close_claw();
   delay(1000);
   arm_up();
+  delay(5000);
+  use_cmd = true;
 }
 
 void claw_cb(const std_msgs::Int8& miss_stat){
@@ -142,31 +146,32 @@ void claw_cb(const std_msgs::Int8& miss_stat){
 }
 
 void cb(const geometry_msgs::Twist& twist_msg){
-  turnRight = false;
-  turnLeft = false;
-  straight = true;
+  if (use_cmd == true){
+    turnRight = false;
+    turnLeft = false;
+    straight = true;
   
 	//convert msg (in linear and angular components) into left and right motor speeds
-  velocity = (int) twist_msg.linear.x;
-  leftMotorSpeed= velocity;
-  rightMotorSpeed = velocity;
-  
-  angular = (int) twist_msg.angular.z;
-  
-  if (angular < 0){
-    turnLeft = true;
-    turnRight = false;
-    straight = false;
-    
-    //negative angle = turn left
-    leftMotorSpeed = velocity + angular;
+    velocity = (int) twist_msg.linear.x;
+    leftMotorSpeed= velocity;
     rightMotorSpeed = velocity;
+  
+    angular = (int) twist_msg.angular.z;
+  
+    if (angular < 0){
+      turnLeft = true;
+      turnRight = false;
+      straight = false;
+    
+      //negative angle = turn left
+      leftMotorSpeed = velocity + angular;
+      rightMotorSpeed = velocity;
 
-    if (leftMotorSpeed>100){
-      leftMotorSpeed == 100;
-    }
-    else if (leftMotorSpeed<-100){
-      leftMotorSpeed == -100;
+      if (leftMotorSpeed>100){
+        leftMotorSpeed == 100;
+      }
+      else if (leftMotorSpeed<-100){
+        leftMotorSpeed == -100;
     }
     if (rightMotorSpeed>100){
       rightMotorSpeed == 100;
@@ -200,6 +205,7 @@ void cb(const geometry_msgs::Twist& twist_msg){
   }
   leftMotorSpeed = map(leftMotorSpeed,-100,100,140,30);
   rightMotorSpeed = map(rightMotorSpeed,-100,100,140,30);
+  }
 }
 
 ros::NodeHandle  nh;
@@ -228,7 +234,7 @@ void setup() {
   arm.attach(ARM_PIN);
   claw.attach(CLAW_PIN);
   arm.write(169);
-  
+
   claw.write(180);
   
   
@@ -296,10 +302,11 @@ void loop() {
     }
   }
   
- 
+  if (use_cmd == true){
   //write the motor speeds to the motor
   leftMotor.write(leftMotorSpeed);
   rightMotor.write(rightMotorSpeed); 
+  }
   
   e_stop_msg.data = eStopTriggered;
   
