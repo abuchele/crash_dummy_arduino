@@ -254,6 +254,7 @@ void setup() {
   h1.show();
   h2.show();
 
+  nh.getHardware()->setBaud(57600);
   nh.initNode();
   nh.advertise(e_stop);
   nh.advertise(can_picked_pub);
