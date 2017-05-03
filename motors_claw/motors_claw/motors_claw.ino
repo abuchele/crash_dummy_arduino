@@ -304,8 +304,8 @@ void loop() {
   
   if (leftMotorSpeed < 0 || rightMotorSpeed < 0){
     if (back_leftIR_range < 25.0 || back_rightIR_range < 25.0){
-      //leftMotorSpeed = 85;
-      //rightMotorSpeed = 85;
+      leftMotorSpeed = 85;
+      rightMotorSpeed = 85;
     }
   }
   
