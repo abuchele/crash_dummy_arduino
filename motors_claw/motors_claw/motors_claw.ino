@@ -117,8 +117,8 @@ void close_claw(){
 void position_forward(){
   while (irRead() < 450) { //IR distance for can
   //scoots forward after claw is down and open, to position can correctly for pickup, speeds and times need to be calibrated
-  leftMotorSpeed = 75; //write slow speed to left and right motors
-  rightMotorSpeed = 75;
+  leftMotorSpeed = 78; //write slow speed to left and right motors
+  rightMotorSpeed = 78;
   leftMotor.write(leftMotorSpeed);
   rightMotor.write(rightMotorSpeed); 
   
