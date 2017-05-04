@@ -15,7 +15,6 @@
 std_msgs::Int8 miss_stat;
 Servo leftMotor;
 Servo rightMotor;
-Servo lidar;
 uint32_t c;
 int leftIR = A0;
 int rightIR = A1;
@@ -56,6 +55,12 @@ int pos_claw = 0;    // variable to store the servo position
 int pos_arm = 0;
 
 boolean  eStopTriggered;
+
+
+ros::NodeHandle  nh;
+
+std_msgs::Bool e_stop_msg;
+std_msgs::Bool can_picked_msg;
 
 
 int velocity = 0;
@@ -116,6 +121,7 @@ void position_forward(){
   rightMotorSpeed = 75;
   leftMotor.write(leftMotorSpeed);
   rightMotor.write(rightMotorSpeed); 
+  
   }
   leftMotorSpeed = 85; // write stopped speed to left and right motors.
   rightMotorSpeed = 85;
@@ -130,8 +136,10 @@ void claw_cycle(){
   rightMotor.write(85); 
   open_claw();
   delay(500);
+  nh.spinOnce();
   arm_down();
   delay(1000);
+  nh.spinOnce();
   position_forward();
   close_claw();
   delay(1000);
@@ -139,12 +147,16 @@ void claw_cycle(){
   delay(5000);
   use_cmd = true;
   can_picked = true;
+  nh.spinOnce();
   
 }
 
 void claw_cb(const std_msgs::Int8& miss_stat){
   if (miss_stat.data == 3){
     claw_cycle();
+  }
+  if (miss_stat.data == 5){
+    can_picked = false;
   }
 }
 
@@ -211,16 +223,13 @@ void cb(const geometry_msgs::Twist& twist_msg){
   }
 }
 
-ros::NodeHandle  nh;
-
-std_msgs::Bool e_stop_msg;
-std_msgs::Bool can_picked_msg;
 
 ros::Publisher e_stop("e_stop", &e_stop_msg);
 ros::Publisher can_picked_pub("can_picked_pub", &can_picked_msg);
 
 ros::Subscriber <geometry_msgs::Twist> sub("cmd_vel", &cb);
 ros::Subscriber <std_msgs::Int8> sub2("miss_stat", &claw_cb);
+
 
 
 void setup() {
@@ -235,7 +244,6 @@ void setup() {
   b2.clear();
   leftMotor.attach(7);
   rightMotor.attach(6);
-  lidar.attach(4);
   arm.attach(ARM_PIN);
   claw.attach(CLAW_PIN);
   arm.write(169);
@@ -260,8 +268,7 @@ void setup() {
   nh.advertise(can_picked_pub);
   nh.subscribe(sub);
   nh.subscribe(sub2);
-  
-  lidar.write(90);
+  nh.spinOnce();
 }
 
 void loop() {
